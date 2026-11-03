@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#E9EFFA</color>
+    <color name="window_bg">#F7F8FA</color>
+    <color name="card_bg">#FFFFFF</color>
+    <color name="text_primary">#1B1F24</color>
+    <color name="text_secondary">#5F6672</color>
+    <color name="accent">#1A6FE8</color>
+    <color name="accent_text">#FFFFFF</color>
+    <color name="button_bg">#E9EDF3</color>
+    <color name="divider">#DFE3E9</color>
+</resources>

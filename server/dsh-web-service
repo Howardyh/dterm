@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euo pipefail
+umask 077
+export PATH=/usr/local/bin:/usr/bin:/bin
+export DSH_HOME=/home/dsh/.dsh
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+state=/home/dsh/.local/state/dsh
+mkdir -p "$state"
+cd /home/dsh/workspace
+if [ -f "$state/web.log" ] && [ "$(stat -c %s "$state/web.log")" -gt 10485760 ]; then
+  mv "$state/web.log" "$state/web.log.previous"
+fi
+# Loopback token bridge for the DSH Android shell app. It exits by itself when
+# the port is already served, so starting it unconditionally is safe.
+if [ -x /usr/local/bin/dsh-token-bridge ]; then
+  ( setsid nohup /usr/local/bin/dsh-token-bridge >> "$state/bridge.log" 2>&1 < /dev/null & ) || true
+fi
+printf '%s\n' "$$" > "$state/web.pid"
+exec /usr/local/bin/node /home/dsh/apps/deepseek-harness/node_modules/.bin/dsh web --host 127.0.0.1 --port 3080 --no-open >> "$state/web.log" 2>&1

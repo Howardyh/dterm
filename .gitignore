@@ -1,0 +1,21 @@
+# build output
+app/build/
+app/dist/
+app/previews/
+*.apk.idsig
+__pycache__/
+*.pyc
+
+# secrets — never commit these
+*.keystore
+*.jks
+*.p12
+*.pass
+bridge.secret
+BuildSecrets.java
+
+# editor / os
+.DS_Store
+.idea/
+*.iml
+local.properties

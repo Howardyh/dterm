@@ -1,0 +1,102 @@
+#!/usr/local/bin/node
+'use strict';
+
+/*
+ * dsh-token-bridge — hands the *current* DSH web launch token to the DSH
+ * Android shell app on loopback, authenticated with a shared secret.
+ *
+ * The DSH web server mints a fresh launch token for every process and prints
+ * the authenticated URL into web.log. Reading that log is the only way to
+ * learn the token from outside the server, so this tiny daemon re-reads the
+ * log on each request and returns the newest token.
+ *
+ * Endpoints (127.0.0.1 only):
+ *   GET /health           -> {"ok":true}                (no auth)
+ *   GET /token            -> {"token":"...","url":"..."} (Authorization: Bearer <secret>)
+ *
+ * It never touches DSH state; if anything is off it exits quietly and the
+ * Android app falls back to asking the user to paste the URL.
+ */
+
+const crypto = require('crypto');
+const fs = require('fs');
+const http = require('http');
+const path = require('path');
+
+const stateDir = process.env.DSH_STATE_DIR || '/home/dsh/.local/state/dsh';
+const logPath = path.join(stateDir, 'web.log');
+const secretPath = path.join(stateDir, 'bridge.secret');
+const host = '127.0.0.1';
+const port = Number(process.env.DSH_BRIDGE_PORT || 3081);
+const webPort = Number(process.env.DSH_WEB_PORT || 3080);
+
+let secret;
+try {
+  secret = fs.readFileSync(secretPath, 'utf8').trim();
+} catch {
+  // No shared secret means no safe way to identify the shell app.
+  process.exit(0);
+}
+if (secret.length < 16) process.exit(0);
+
+const TOKEN_RE = /[?&]token=([A-Za-z0-9_-]{20,256})/g;
+const TAIL_BYTES = 256 * 1024;
+
+function newestToken() {
+  let fd;
+  try {
+    const size = fs.statSync(logPath).size;
+    const start = Math.max(0, size - TAIL_BYTES);
+    const length = size - start;
+    if (length <= 0) return null;
+    const buffer = Buffer.alloc(length);
+    fd = fs.openSync(logPath, 'r');
+    fs.readSync(fd, buffer, 0, length, start);
+    const text = buffer.toString('utf8');
+    let token = null;
+    TOKEN_RE.lastIndex = 0;
+    let match;
+    while ((match = TOKEN_RE.exec(text)) !== null) token = match[1];
+    return token;
+  } catch {
+    return null;
+  } finally {
+    if (fd !== undefined) {
+      try { fs.closeSync(fd); } catch { /* ignore */ }
+    }
+  }
+}
+
+function authorized(header) {
+  if (typeof header !== 'string' || !header.startsWith('Bearer ')) return false;
+  const given = Buffer.from(header.slice(7).trim(), 'utf8');
+  const expected = Buffer.from(secret, 'utf8');
+  return given.length === expected.length && crypto.timingSafeEqual(given, expected);
+}
+
+function reply(res, status, body, type) {
+  res.writeHead(status, {
+    'content-type': type || 'application/json; charset=utf-8',
+    'cache-control': 'no-store',
+    'x-content-type-options': 'nosniff',
+  });
+  res.end(body);
+}
+
+const server = http.createServer((req, res) => {
+  const url = (req.url || '/').split('?')[0];
+  if (req.method !== 'GET') return reply(res, 405, '{"error":"method"}');
+  if (url === '/health') return reply(res, 200, '{"ok":true}');
+  if (url !== '/token') return reply(res, 404, '{"error":"not_found"}');
+  if (!authorized(req.headers.authorization)) return reply(res, 401, '{"error":"unauthorized"}');
+  const token = newestToken();
+  if (token === null) return reply(res, 503, '{"error":"no_token"}');
+  reply(res, 200, JSON.stringify({
+    token,
+    url: 'http://' + host + ':' + webPort + '/?token=' + token,
+  }));
+});
+
+server.on('close', () => process.exit(0));
+server.on('error', () => process.exit(0));
+server.listen(port, host);

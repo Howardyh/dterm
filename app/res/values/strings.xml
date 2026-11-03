@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dterm</string>
+    <string name="shortcut_reload">重新加载</string>
+    <string name="shortcut_reload_long">重新加载 Dterm 页面</string>
+    <string name="shortcut_browser">在浏览器打开</string>
+    <string name="shortcut_browser_long">用系统浏览器打开 Dterm</string>
+    <string name="shortcut_termux">打开 Termux</string>
+    <string name="shortcut_termux_long">切到 Termux 启动或查看 DSH 服务</string>
+</resources>
