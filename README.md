@@ -1,5 +1,10 @@
 # Dterm
 
+[![Latest release](https://img.shields.io/github/v/release/Howardyh/dterm?color=1F4DFF)](https://github.com/Howardyh/dterm/releases)
+[![License](https://img.shields.io/badge/license-MIT-22C55E.svg)](LICENSE)
+
+**中文** · [English](README.en.md)
+
 **把 Termux 里的 DeepSeek Harness 包装成一个真正能用的 Android 应用。**
 
 Dterm 不是把 DSH 塞进 APK，而是一个 46 KB 的全屏外壳：桌面有独立图标、没有地址栏、
