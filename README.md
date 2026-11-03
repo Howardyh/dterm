@@ -121,6 +121,9 @@ AAPT2=/path/to/aapt2 bash build.sh
 - 仓库里**不包含**任何密钥：签名密钥、`bridge.secret`、生成的 `BuildSecrets.java`
   都被 `.gitignore` 排除。
 
+完整信任模型见 [SECURITY.md](SECURITY.md)；英文安装说明见
+[`docs/install.en.md`](docs/install.en.md)。
+
 ## 许可
 
 MIT，见 [LICENSE](LICENSE)。

@@ -76,7 +76,7 @@ release/    Prebuilt APK
 2. Make sure the DSH service is running in Termux (`dsh-start`).
 3. Open Dterm — it should land straight in the UI.
 
-Detailed steps and troubleshooting: [`docs/install.md`](docs/install.md) (Chinese).
+Detailed steps and troubleshooting: [`docs/install.en.md`](docs/install.en.md) (Chinese version: [`docs/install.md`](docs/install.md)).
 
 "Start DSH" needs one Termux setting:
 
@@ -125,6 +125,8 @@ See [CHANGELOG.md](CHANGELOG.md) (Chinese). Currently 1.4.4.
   trust level is roughly that of the DSH browser cookie — fine for a personal device.
 - The repository contains **no secrets**: signing keys, `bridge.secret` and the generated
   `BuildSecrets.java` are all excluded by `.gitignore`.
+
+See [SECURITY.md](SECURITY.md) for the full trust model.
 
 ## License
 
